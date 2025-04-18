@@ -25,11 +25,17 @@ function reducer(state, action) {
       return { ...state, status: "active" };
     case "newAnswer":
       console.log(action.payload);
+      const question = state.questions.at(state.index);
       return {
         ...state,
-        answer: action.payload.answer,
-        points: action.payload.points,
+        answer: action.payload,
+        points:
+          action.payload === question.correctOption
+            ? state.points + question.points
+            : state.points,
       };
+    case "nextQuestion":
+      return { ...state, index: state.index + 1, answer: null };
     default:
       throw new Error("Unknown Action");
   }
@@ -39,7 +45,7 @@ export default function App() {
   // return <div>{/* <DateCounter /> */}</div>;
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { questions, status, index, answer } = state;
+  const { questions, status, index, answer, points } = state;
   const numQuestions = questions.length;
 
   useEffect(function () {
@@ -63,6 +69,7 @@ export default function App() {
             question={questions[index]}
             dispatch={dispatch}
             answer={answer}
+            points={points}
           />
         )}
       </Main>
