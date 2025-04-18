@@ -11,6 +11,8 @@ const initialState = {
   questions: [],
   status: "loading",
   index: 0,
+  answer: null,
+  points: 0,
 };
 
 function reducer(state, action) {
@@ -21,6 +23,13 @@ function reducer(state, action) {
       return { ...state, status: "error" };
     case "start":
       return { ...state, status: "active" };
+    case "newAnswer":
+      console.log(action.payload);
+      return {
+        ...state,
+        answer: action.payload.answer,
+        points: action.payload.points,
+      };
     default:
       throw new Error("Unknown Action");
   }
@@ -30,7 +39,7 @@ export default function App() {
   // return <div>{/* <DateCounter /> */}</div>;
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { questions, status, index } = state;
+  const { questions, status, index, answer } = state;
   const numQuestions = questions.length;
 
   useEffect(function () {
@@ -49,7 +58,13 @@ export default function App() {
         {status === "ready" && (
           <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
         )}
-        {status === "active" && <Question question={questions[index]} />}
+        {status === "active" && (
+          <Question
+            question={questions[index]}
+            dispatch={dispatch}
+            answer={answer}
+          />
+        )}
       </Main>
     </div>
   );
