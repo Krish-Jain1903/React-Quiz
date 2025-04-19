@@ -7,6 +7,7 @@ import Error from "./Error";
 import StartScreen from "./data/StartScreen";
 import Question from "./Question";
 import Progress from "./Progress";
+import FinishScreen from "./FinishScreen";
 
 const initialState = {
   questions: [],
@@ -14,6 +15,7 @@ const initialState = {
   index: 0,
   answer: null,
   points: 0,
+  highscore: 0,
 };
 
 function reducer(state, action) {
@@ -35,7 +37,20 @@ function reducer(state, action) {
             : state.points,
       };
     case "nextQuestion":
-      return { ...state, index: state.index + 1, answer: null };
+      const currIndex = state.index;
+      const numQuestions = state.questions.length;
+      if (currIndex === numQuestions - 1) {
+        return {
+          ...state,
+          status: "finished",
+          highscore:
+            state.points > state.highscore ? state.points : state.highscore,
+        };
+      } else {
+        return { ...state, index: state.index + 1, answer: null };
+      }
+    case "restart":
+      return { ...state, status: "ready", index: 0, answer: null, points: 0 };
     default:
       throw new Error("Unknown Action");
   }
@@ -45,7 +60,7 @@ export default function App() {
   // return <div>{/* <DateCounter /> */}</div>;
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { questions, status, index, answer, points } = state;
+  const { questions, status, index, answer, points, highscore } = state;
   const numQuestions = questions.length;
   const totalPoints = questions.reduce((accumulator, currQuestion) => {
     return accumulator + currQuestion.points;
@@ -81,8 +96,18 @@ export default function App() {
               dispatch={dispatch}
               answer={answer}
               points={points}
+              index={index}
+              numQuestions={numQuestions}
             />
           </>
+        )}
+        {status === "finished" && (
+          <FinishScreen
+            points={points}
+            totalPoints={totalPoints}
+            highscore={highscore}
+            dispatch={dispatch}
+          />
         )}
       </Main>
     </div>

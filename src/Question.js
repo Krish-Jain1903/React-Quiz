@@ -1,6 +1,6 @@
 import Options from "./Options";
 
-function Question({ question, dispatch, answer, points }) {
+function Question({ question, dispatch, answer, index, numQuestions }) {
   console.log(question);
   return (
     <div>
@@ -11,7 +11,7 @@ function Question({ question, dispatch, answer, points }) {
           className="btn btn-ui"
           onClick={() => dispatch({ type: "nextQuestion" })}
         >
-          Next
+          {index === numQuestions - 1 ? "Finish" : "Next"}
         </button>
       )}
     </div>
