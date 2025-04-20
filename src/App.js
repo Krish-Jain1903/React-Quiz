@@ -8,6 +8,9 @@ import StartScreen from "./data/StartScreen";
 import Question from "./Question";
 import Progress from "./Progress";
 import FinishScreen from "./FinishScreen";
+import Timer from "./Timer";
+
+const SECS_PER_QUESTION = 30;
 
 const initialState = {
   questions: [],
@@ -16,6 +19,7 @@ const initialState = {
   answer: null,
   points: 0,
   highscore: 0,
+  secondsRemaining: null,
 };
 
 function reducer(state, action) {
@@ -25,7 +29,11 @@ function reducer(state, action) {
     case "dataFailed":
       return { ...state, status: "error" };
     case "start":
-      return { ...state, status: "active" };
+      return {
+        ...state,
+        status: "active",
+        secondsRemaining: state.questions.length * SECS_PER_QUESTION,
+      };
     case "newAnswer":
       const question = state.questions.at(state.index); // Taking Question of Current Index
       return {
@@ -50,7 +58,20 @@ function reducer(state, action) {
         return { ...state, index: state.index + 1, answer: null };
       }
     case "restart":
-      return { ...state, status: "ready", index: 0, answer: null, points: 0 };
+      return {
+        ...state,
+        status: "ready",
+        index: 0,
+        answer: null,
+        points: 0,
+        secondsRemaining: 10,
+      };
+    case "tick":
+      return {
+        ...state,
+        secondsRemaining: state.secondsRemaining - 1,
+        status: state.secondsRemaining === 0 ? "finished" : state.status,
+      };
     default:
       throw new Error("Unknown Action");
   }
@@ -60,7 +81,15 @@ export default function App() {
   // return <div>{/* <DateCounter /> */}</div>;
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { questions, status, index, answer, points, highscore } = state;
+  const {
+    questions,
+    status,
+    index,
+    answer,
+    points,
+    highscore,
+    secondsRemaining,
+  } = state;
   const numQuestions = questions.length;
   const totalPoints = questions.reduce((accumulator, currQuestion) => {
     return accumulator + currQuestion.points;
@@ -99,6 +128,7 @@ export default function App() {
               index={index}
               numQuestions={numQuestions}
             />
+            <Timer dispatch={dispatch} secondsRemaining={secondsRemaining} />
           </>
         )}
         {status === "finished" && (
